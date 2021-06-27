@@ -151,16 +151,7 @@ daft_df_1 = pd.concat([loc_df, bba_df_final, pc_df], axis=1)
 daft_df_1.head()
 
 daft_df_1.to_csv(r'Files\daft_df_1.csv', index=False, header=True)
-#
-# loc_df.shape
-# pc_df.shape
-# bba_df.head()
-#
-# bba_wrk.head(10)
-#
-# daft_df = pd.concat
-#
-# bba_wrk.to_csv(r'Files\bba_wrk.csv', index=False, header=True)
+
 
 ################################################################################
 
@@ -175,7 +166,7 @@ daft_df_1.to_csv(r'Files\daft_df_1.csv', index=False, header=True)
 
 loc_bs_sp = soup.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 eARcqq'})
 bed_bath_area_bs_sp = soup.findAll("div",{'class': 'SubUnit__CardInfoItem-sc-10x486s-7 AsGHw'})
-price_bs_sp = search2.soup({"span","p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
+price_bs_sp = soup.findAll({"span","p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
 
 
 
@@ -185,10 +176,6 @@ for i in range(len(loc_bs_sp)):
     loc_sp_txt_i = loc_bs_sp[i].text
     loc_parent_txt_i = loc_bs_sp[i].find_next("li")['data-testid']
     loc_sp_lst.append((loc_parent_txt_i, loc_sp_txt_i))
-
-print(loc_sp_lst)
-
-
 
 
 price_sp_lst = []
@@ -205,13 +192,16 @@ for i in range(len(bed_bath_area_bs_sp)):
         bba_parent_txt_i = bed_bath_area_bs_sp[i].find_parent("li")['data-testid']
         bba_sp_lst.append((bba_parent_txt_i, bba_sp_txt_i))
 
-print(bba_sp_lst)
-
-len(bed_bath_area_bs_sp[0].text)
 
 loc_sp_df = pd.DataFrame(loc_sp_lst,columns = ['join_value', 'address'])
 pc_sp_df = pd.DataFrame(price_sp_lst,columns = ['join_value', 'price'])
+
 bba_sp_df =pd.DataFrame(bba_sp_lst,columns=['join_value','bba'])
+
+bba_sp_wrk = bba_sp_df['bba'].str.split(pat='·',expand=True)
+bba_wrk.columns = ['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t']
+
+
 
 df_sp = pd.merge(pd.merge(loc_sp_df, pc_sp_df, on=['join_value'], how='outer')
                                     ,bba_sp_df, on=['join_value'], how='outer')
