@@ -65,6 +65,7 @@ price_span_bs = soup.findAll('span', {'class': 'TitleBlock__StyledSpan-sc-1avkva
 print(len(loc_bs))
 
 print(bed_bath_area_bs)
+
 # Location and building type do not pick up the "featured value properties" while
 # bed/bath/area and price do, however these values are incorrect and need to be deleted
 
@@ -77,11 +78,11 @@ for i in range(len(price_span_bs)):
 
     bba_txt_i = bed_bath_area_bs[i].text
     if len(bba_txt_i) > 0:
-        bba_lst.append(bba_txt_i)
+        bba_lst.append(bba_txt_i).get_text(separator='·')
 print(len(price_lst))
 print(len(bba_lst))
 
-bed_bath_area_bs[7].text
+bed_bath_area_bs[10].text
 
 loc_lst = []
 btype_lst = []
@@ -112,6 +113,8 @@ bba_df.head()
 
 daft_df = pd.concat
 
+bba_df.to_csv(r'Files\bba_df.csv', index=False, header=True)
+
 ################################################################################
 
 req_daft2 = requests.get('https://www.daft.ie/property-for-sale/ireland?from=20&pageSize=20')
@@ -132,10 +135,10 @@ print(type(search2))
 # Please note we cut off the last few digits in the class in order to bring in the
 # featured property
 
-loc_bs = search2.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 knPImU'})
-bed_bath_area_bs = search2.findAll("div",{'class': 'TitleBlock__CardInfo-sc-1avkvav-9 QvaxK'})
-btype_bs = search2.findAll("p", {'class': 'TitleBlock__CardInfoItem-sc-1avkvav-8 bcaKbv'})
-price_span_bs = search2.findAll("span", {'class': 'TitleBlock__StyledSpan-sc-1avkvav-4 gDBFnc'})
+loc_bs = soup.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 knPImU'})
+bed_bath_area_bs = soup.findAll("div",{'class': 'TitleBlock__CardInfo-sc-1avkvav-9 QvaxK'})
+btype_bs = soup.findAll("p", {'class': 'TitleBlock__CardInfoItem-sc-1avkvav-8 bcaKbv'})
+price_span_bs = soup.findAll("span", {'class': 'TitleBlock__StyledSpan-sc-1avkvav-4 gDBFnc'})
 
 # Location and building type do not pick up the "featured value properties" while
 # bed/bath/area and price do, however these values are incorrect and need to be deleted
@@ -144,12 +147,13 @@ price_lst = []
 bba_lst = []
 for i in range(len(price_span_bs)):
     pc_txt_i = price_span_bs[i].text
-    bba_txt_i = bed_bath_area_bs[i].text
     price_lst.append((pc_parent_txt_i, pc_txt_i))
+
+    bba_txt_i = bed_bath_area_bs[i].text
     if len(bba_txt_i) > 0:
         bba_lst.append(bba_txt_i)
 print(len(price_lst))
-print(len(bed_bath_area_lst))
+print(len(bba_lst))
 
 loc_lst = []
 btype_lst = []
@@ -167,9 +171,6 @@ loc_bs_sp = search2.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 eAR
 bed_bath_area_bs_sp = search2.findAll("div",{'class': 'SubUnit__CardInfoItem-sc-10x486s-7 AsGHw'})
 price_bs_sp = search2.findAll({"span","p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
 
-<div class="SubUnit__CardInfoItem-sc-10x486s-7 AsGHw">3 Bed · 3 Bath · Duplex</div>
-
-< div class ="SubUnit__CardInfoItem-sc-10x486s-7 AsGHw" > 2 Bed · 2 Bath · Apartment < / div >
 
 
 
