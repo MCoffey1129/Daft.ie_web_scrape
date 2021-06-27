@@ -29,6 +29,7 @@
 import requests
 from bs4 import BeautifulSoup as bs
 import pandas as pd
+import re
 import numpy as np
 
 
@@ -76,9 +77,9 @@ for i in range(len(price_span_bs)):
     pc_parent_txt_i = price_span_bs[i].find_parent('a')['href']
     price_lst.append((pc_parent_txt_i,pc_txt_i))
 
-    bba_txt_i = bed_bath_area_bs[i].text
+    bba_txt_i = bed_bath_area_bs[i].get_text(separator='·')
     if len(bba_txt_i) > 0:
-        bba_lst.append(bba_txt_i).get_text(separator='·')
+        bba_lst.append(bba_txt_i)
 print(len(price_lst))
 print(len(bba_lst))
 
@@ -101,15 +102,29 @@ pc_df = pd.DataFrame(price_lst,columns = ['ref', 'price'])
 pc_df =pc_df.loc[pc_df['ref'].str[:9]=='/for-sale']
 
 bba_df =pd.DataFrame(bba_lst,columns=['bba'])
-bba_df['bba'].str.split(pat='·',expand=True)
+bba_wrk = bba_df['bba'].str.split(pat='·',expand=True)
+bba_wrk.columns = ['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t']
 
-columns=['bedroom', 'bathroom', 'area', 'btype']
+bba_wrk = bba_wrk.fillna('')
+
+prop_lst = ['Apartment','Bungalow','Detached','Duplex','End of Terrace','House','Semi-D','Site ','Studio'\
+    ,'Terrace','Townhouse']
+
+bba_wrk['bed'] = bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bed'), ['bed_t']]
+
+bba_wrk['bath'] = bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bath'), ['bed_t']]
+bba_wrk['bath'] = bba_wrk.loc[bba_wrk['bath_t'].str.contains('Bath'), ['bath_t']]
+
+bba_wrk['area'] = bba_wrk.loc[bba_wrk['area_t'] == r'+W', ['area_t']]
+
+
+bba_wrk.to_csv(r'Files\bba_wrk.csv', index=False, header=True)
 
 loc_df.shape
 pc_df.shape
-bba_df.shape
-
 bba_df.head()
+
+bba_wrk.head()
 
 daft_df = pd.concat
 
