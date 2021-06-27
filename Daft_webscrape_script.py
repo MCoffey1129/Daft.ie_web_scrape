@@ -104,9 +104,8 @@ county_lst= ['Co.Antrim','Co.Armagh','Co.Carlow','Co.Cavan','Co.Clare','Co.Cork'
 'Co.Longford','Co.Louth','Co.Mayo','Co.Meath','Co.Monaghan','Co.Offaly','Co.Roscommon','Co.Sligo','Co.Tipperary',
 'Co.Tyrone','Co.Waterford','Co.Westmeath','Co.Wexford','Co.Wicklow']
 
-loc_df.loc[loc_df['address'].isin(county_lst), ['county']] = loc_df['address']
+loc_df['county'] =loc_df['address'].str.extract('(Co. [A-Z][a-z]+)',expand=True)
 loc_df.head()
-
 
 pc_df = pd.DataFrame(price_lst,columns = ['ref', 'price'])
 pc_df =pc_df.loc[pc_df['ref'].str[:9]=='/for-sale']
@@ -139,7 +138,7 @@ bba_wrk.loc[(bba_wrk['prop_type_t'].str.contains(r'\d m'))
 bba_wrk.loc[bba_wrk['bed_t'].str.contains(r'\d m'), ['area']] = bba_wrk['bed_t']
 
 
-prop_lst = ['Apartment','Bungalow','Detached','Duplex','End of Terrace','House','Semi-D','Site ','Studio'\
+prop_lst = ['Apartment','Bungalow','Detached','Duplex','End of Terrace','House','Semi-D','Site','Studio'\
     ,'Terrace','Townhouse']
 bba_wrk.loc[bba_wrk['bed_t'].isin(prop_lst), ['prop_type']] = bba_wrk['bed_t']
 bba_wrk.loc[bba_wrk['bath_t'].isin(prop_lst) , ['prop_type']] = bba_wrk['bath_t']
