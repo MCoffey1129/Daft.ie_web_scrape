@@ -98,6 +98,16 @@ print(len(btype_lst))
 #
 loc_df = pd.DataFrame(loc_lst,columns = ['address'])
 
+
+county_lst= ['Co.Antrim','Co.Armagh','Co.Carlow','Co.Cavan','Co.Clare','Co.Cork','Co.Donegal','Co.Down','Co.Dublin',
+'Co.Fermanagh','Co.Galway','Co.Kerry','Co.Kildare','Co.Kilkenny','Co.Laois','Co.Leitrim','Co.Limerick','Co.Derry',
+'Co.Longford','Co.Louth','Co.Mayo','Co.Meath','Co.Monaghan','Co.Offaly','Co.Roscommon','Co.Sligo','Co.Tipperary',
+'Co.Tyrone','Co.Waterford','Co.Westmeath','Co.Wexford','Co.Wicklow']
+
+loc_df.loc[loc_df['address'].isin(county_lst), ['county']] = loc_df['address']
+loc_df.head()
+
+
 pc_df = pd.DataFrame(price_lst,columns = ['ref', 'price'])
 pc_df =pc_df.loc[pc_df['ref'].str[:9]=='/for-sale']
 
@@ -107,16 +117,38 @@ bba_wrk.columns = ['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t']
 
 bba_wrk = bba_wrk.fillna('')
 
+
+
+bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bed'), ['bed']] = bba_wrk['bed_t']
+
+bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bath'), ['bath']] = bba_wrk['bed_t']
+bba_wrk.loc[bba_wrk['bath_t'].str.contains('Bath'), ['bath']] = bba_wrk['bath_t']
+
+bba_wrk.loc[(bba_wrk['bed_t'].str.contains(r'\d m'))
+             | (bba_wrk['bed_t'].str.contains(r'\d ac')) , ['area']] = bba_wrk['bed_t']
+
+bba_wrk.loc[(bba_wrk['bath_t'].str.contains(r'\d m'))
+             | (bba_wrk['bath_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['bath_t']
+
+bba_wrk.loc[(bba_wrk['area_t'].str.contains(r'\d m'))
+             | (bba_wrk['area_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['area_t']
+
+bba_wrk.loc[(bba_wrk['prop_type_t'].str.contains(r'\d m'))
+             | (bba_wrk['prop_type_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['prop_type_t']
+
+bba_wrk.loc[bba_wrk['bed_t'].str.contains(r'\d m'), ['area']] = bba_wrk['bed_t']
+
+
 prop_lst = ['Apartment','Bungalow','Detached','Duplex','End of Terrace','House','Semi-D','Site ','Studio'\
     ,'Terrace','Townhouse']
+bba_wrk.loc[bba_wrk['bed_t'].isin(prop_lst), ['prop_type']] = bba_wrk['bed_t']
+bba_wrk.loc[bba_wrk['bath_t'].isin(prop_lst) , ['prop_type']] = bba_wrk['bath_t']
+bba_wrk.loc[bba_wrk['area_t'].isin(prop_lst) , ['prop_type']] = bba_wrk['area_t']
+bba_wrk.loc[bba_wrk['prop_type_t'].isin(prop_lst), ['prop_type']] = bba_wrk['prop_type_t']
 
-bba_wrk['bed'] = bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bed'), ['bed_t']]
 
-bba_wrk['bath'] = bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bath'), ['bed_t']]
-bba_wrk['bath'] = bba_wrk.loc[bba_wrk['bath_t'].str.contains('Bath'), ['bath_t']]
 
-bba_wrk['area'] = bba_wrk.loc[bba_wrk['area_t'] == r'+W', ['area_t']]
-
+bba_wrk[]
 
 bba_wrk.to_csv(r'Files\bba_wrk.csv', index=False, header=True)
 
@@ -124,11 +156,11 @@ loc_df.shape
 pc_df.shape
 bba_df.head()
 
-bba_wrk.head()
+bba_wrk.head(10)
 
 daft_df = pd.concat
 
-bba_df.to_csv(r'Files\bba_df.csv', index=False, header=True)
+bba_wrk.to_csv(r'Files\bba_wrk.csv', index=False, header=True)
 
 ################################################################################
 
