@@ -102,6 +102,9 @@ loc_df.head()
 
 pc_df = pd.DataFrame(price_lst,columns = ['ref', 'price'])
 pc_df =pc_df.loc[pc_df['ref'].str[:9]=='/for-sale']
+pc_df.reset_index(inplace=True)
+pc_df.drop(columns=['index','ref'], inplace=True)
+pc_df.head()
 
 
 bba_df =pd.DataFrame(bba_lst,columns=['bba'])
@@ -145,12 +148,9 @@ bba_df_final.fillna('', inplace=True)
 bba_df_final.head()
 
 daft_df_1 = pd.concat([loc_df, bba_df_final, pc_df], axis=1)
-daft_df1_1.head()
+daft_df_1.head()
 
-corr_df = pd.concat([pd.DataFrame(col_list, columns=['columns']), pd.DataFrame(corr_list
-                                                                               , columns=['Correlation'])], axis=1)
-
-# bba_wrk.to_csv(r'Files\bba_wrk.csv', index=False, header=True)
+daft_df_1.to_csv(r'Files\daft_df_1.csv', index=False, header=True)
 #
 # loc_df.shape
 # pc_df.shape
@@ -173,9 +173,9 @@ corr_df = pd.concat([pd.DataFrame(col_list, columns=['columns']), pd.DataFrame(c
 # featured property
 
 
-loc_bs_sp = search2.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 eARcqq'})
-bed_bath_area_bs_sp = search2.findAll("div",{'class': 'SubUnit__CardInfoItem-sc-10x486s-7 AsGHw'})
-price_bs_sp = search2.findAll({"span","p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
+loc_bs_sp = soup.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 eARcqq'})
+bed_bath_area_bs_sp = soup.findAll("div",{'class': 'SubUnit__CardInfoItem-sc-10x486s-7 AsGHw'})
+price_bs_sp = search2.soup({"span","p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
 
 
 
