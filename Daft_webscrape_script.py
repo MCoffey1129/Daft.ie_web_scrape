@@ -195,6 +195,7 @@ for i in range(len(bed_bath_area_bs_sp)):
         bba_parent_txt_i = bed_bath_area_bs_sp[i].find_parents("li")[1]['data-testid']
         bba_sp_lst.append((bba_parent_txt_i, bba_sp_txt_i))
 
+bba_sp_lst[0:4]
 
 loc_sp_df = pd.DataFrame(loc_sp_lst,columns = ['join_value', 'address'])
 loc_sp_df['county'] =loc_sp_df['address'].str.extract('(Co. [A-Z][a-z]+)',expand=True)
@@ -228,6 +229,7 @@ bba_sp_wrk.loc[bba_sp_wrk['bed_t'].isin(prop_lst), ['prop_type']] = bba_sp_wrk['
 bba_sp_wrk.loc[bba_sp_wrk['bath_t'].isin(prop_lst), ['prop_type']] = bba_sp_wrk['bath_t']
 bba_sp_wrk.loc[bba_sp_wrk['prop_type_t'].isin(prop_lst), ['prop_type']] = bba_sp_wrk['prop_type_t']
 
+bba_sp_wrk['area'] = ''
 
 bba_sp_df_final = pd.concat([bba_sp_df['join_value'], bba_sp_wrk.drop(columns=['bed_t','bath_t','prop_type_t'])]
                             ,axis=1)
@@ -235,12 +237,22 @@ bba_sp_df_final.fillna('', inplace=True)
 bba_sp_df_final.head()
 
 
-daft_df_2 = pd.merge(pd.merge(loc_sp_df, pc_sp_df, on=['join_value'], how='outer')
-                                    ,bba_sp_df_final, on=['join_value'], how='outer')
+daft_df_2 = pd.merge(pd.merge(loc_sp_df, bba_sp_df_final, on=['join_value'], how='inner')
+                                    ,pc_sp_df, on=['join_value'], how='inner')
 
-daft_df_2.head(10)
+daft_df_2.drop_duplicates(subset=['join_value',	'address', 'county', 'price', 'bed', 'bath', 'prop_type']
+                                    , inplace=True)
 
-df_sp['address'].fillna(method='ffill', inplace=True)
 
-# df_sp.to_csv(r'Files\df_sp.csv', index=False, header=True)
 
+daft_df_2.to_csv(r'Files\daft_df_2.csv', index=False, header=True)
+
+daft_df_2.drop(columns=['join_value'],axis=1,inplace=True)
+
+bba_sp_df_final.loc[bba_sp_df_final['join_value']=='result-2289668']
+pc_sp_df.loc[pc_sp_df['join_value']=='result-2289668']
+daft_df_2.loc[daft_df_2['join_value']=='result-2289668']
+
+daft_df = pd.concat([daft_df_1, daft_df_2])
+daft_df.head()
+daft_df.tail()
