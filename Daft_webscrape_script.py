@@ -111,7 +111,6 @@ pc_df['price'] = pc_df['price'].str.strip()
 pc_df['price_n'] = pc_df['price'].replace({'\€': '' ,  ',': '' , 'AMV: ': '' , 'AMV: Price on Application':'0'
                                             ,'Price on Application': '0'
                                               , '(£.*?)[\s]': ''
-                                              # ,'\£': ''
                                               , '[\(\)]':''}
                                           , regex=True).astype(float)
 
