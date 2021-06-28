@@ -110,9 +110,9 @@ pc_df.head()
 bba_df =pd.DataFrame(bba_lst,columns=['bba'])
 bba_wrk = bba_df['bba'].str.split(pat='·',expand=True)
 bba_wrk.columns = ['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t']
-
+bba_wrk = bba_wrk.apply(lambda x: x.str.strip())
 bba_wrk = bba_wrk.fillna('')
-
+bba_wrk.head()
 
 
 bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bed'), ['bed']] = bba_wrk['bed_t']
@@ -210,45 +210,37 @@ bba_sp_df.head()
 bba_sp_df.shape
 
 bba_sp_wrk = bba_sp_df['bba'].str.split(pat='·',expand=True)
-bba_wrk.columns = ['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t']
+bba_sp_wrk.columns = ['bed_t', 'bath_t',  'prop_type_t']
+bba_sp_wrk = bba_sp_wrk.apply(lambda x: x.str.strip())
+bba_sp_wrk = bba_sp_wrk.fillna('')
 bba_sp_wrk.head()
-bba_wrk = bba_wrk.fillna('')
-
-bba_sp_wrk.to_csv(r'Files\bba_sp_wrk.csv', index=False, header=True)
 
 
-# bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bed'), ['bed']] = bba_wrk['bed_t']
-#
-# bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bath'), ['bath']] = bba_wrk['bed_t']
-# bba_wrk.loc[bba_wrk['bath_t'].str.contains('Bath'), ['bath']] = bba_wrk['bath_t']
-#
-
-# prop_lst = ['Apartment','Bungalow','Detached','Duplex','End of Terrace','House','Semi-D','Site','Studio'\
-#     ,'Terrace','Townhouse']
-# bba_wrk.loc[bba_wrk['bed_t'].isin(prop_lst), ['prop_type']] = bba_wrk['bed_t']
-# bba_wrk.loc[bba_wrk['bath_t'].isin(prop_lst) , ['prop_type']] = bba_wrk['bath_t']
-# bba_wrk.loc[bba_wrk['area_t'].isin(prop_lst) , ['prop_type']] = bba_wrk['area_t']
-# bba_wrk.loc[bba_wrk['prop_type_t'].isin(prop_lst), ['prop_type']] = bba_wrk['prop_type_t']
-# bba_wrk.head()
-#
-# bba_df_final =  bba_wrk.drop(columns=['bed_t','bath_t','area_t','prop_type_t', 'extra_t'])
-# bba_df_final.fillna('', inplace=True)
+# bba_sp_wrk.to_csv(r'Files\bba_sp_wrk.csv', index=False, header=True)
 
 
+bba_sp_wrk.loc[bba_sp_wrk['bed_t'].str.contains('Bed'), ['bed']] = bba_sp_wrk['bed_t']
+
+bba_sp_wrk.loc[bba_sp_wrk['bed_t'].str.contains('Bath'), ['bath']] = bba_sp_wrk['bed_t']
+bba_sp_wrk.loc[bba_sp_wrk['bath_t'].str.contains('Bath'), ['bath']] = bba_sp_wrk['bath_t']
+
+bba_sp_wrk.loc[bba_sp_wrk['bed_t'].isin(prop_lst), ['prop_type']] = bba_sp_wrk['bed_t']
+bba_sp_wrk.loc[bba_sp_wrk['bath_t'].isin(prop_lst), ['prop_type']] = bba_sp_wrk['bath_t']
+bba_sp_wrk.loc[bba_sp_wrk['prop_type_t'].isin(prop_lst), ['prop_type']] = bba_sp_wrk['prop_type_t']
 
 
+bba_sp_df_final = pd.concat([bba_sp_df['join_value'], bba_sp_wrk.drop(columns=['bed_t','bath_t','prop_type_t'])]
+                            ,axis=1)
+bba_sp_df_final.fillna('', inplace=True)
+bba_sp_df_final.head()
 
 
+daft_df_2 = pd.merge(pd.merge(loc_sp_df, pc_sp_df, on=['join_value'], how='outer')
+                                    ,bba_sp_df_final, on=['join_value'], how='outer')
 
-
-
-df_sp = pd.merge(pd.merge(loc_sp_df, pc_sp_df, on=['join_value'], how='outer')
-                                    ,bba_sp_df, on=['join_value'], how='outer')
+daft_df_2.head(10)
 
 df_sp['address'].fillna(method='ffill', inplace=True)
 
 # df_sp.to_csv(r'Files\df_sp.csv', index=False, header=True)
 
-df_sp['bba'].str.split('·',expand=True,columns=['bedroom', 'bathroom', 'btype', 'area'])
-
-bba_df['bba'].str.split(pat='·',expand=True)
