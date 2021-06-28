@@ -106,6 +106,25 @@ pc_df.reset_index(inplace=True)
 pc_df.drop(columns=['index','ref'], inplace=True)
 pc_df.head()
 
+# Create a numeric price field
+pc_df['price'] = pc_df['price'].str.strip()
+pc_df['price_n'] = pc_df['price'].replace({'\€': '' ,  ',': '' , 'AMV: ': '' , 'AMV: Price on Application':''
+                                            ,'Price on Application': ''
+                                              , '(£.*?)[\s]': ''
+                                              # ,'\£': ''
+                                              , '[\(\)]':''}
+                                          , regex=True).astype(float)
+
+pc_df['price_n'] = pc_df['price_n'].str.strip()
+
+pc_df.to_csv(r'Files\pc_df.csv', index=False, header=True)
+
+pc_df['price_n'] = pc_df['price_n'].astype(float)
+
+pc_df.head()
+
+pc_df.loc[pc_df['price'] == 'AMV: Price on Application']
+pc_df.to_csv(r'Files\pc_df.csv', index=False, header=True)
 
 bba_df =pd.DataFrame(bba_lst,columns=['bba'])
 bba_wrk = bba_df['bba'].str.split(pat='·',expand=True)
@@ -152,7 +171,7 @@ bba_df_final.head()
 daft_df_1 = pd.concat([loc_df, bba_df_final, pc_df], axis=1)
 daft_df_1.head()
 
-
+daft_df_1.shape
 
 
 ################################################################################
@@ -217,7 +236,7 @@ bba_sp_wrk = bba_sp_wrk.fillna('')
 bba_sp_wrk.head()
 
 
-# bba_sp_wrk.to_csv(r'Files\bba_sp_wrk.csv', index=False, header=True)
+
 
 
 bba_sp_wrk.loc[bba_sp_wrk['bed_t'].str.contains('Bed'), ['bed']] = bba_sp_wrk['bed_t']
@@ -249,10 +268,10 @@ daft_df_2.to_csv(r'Files\daft_df_2.csv', index=False, header=True)
 
 daft_df_2.drop(columns=['join_value'],axis=1,inplace=True)
 
-bba_sp_df_final.loc[bba_sp_df_final['join_value']=='result-2289668']
-pc_sp_df.loc[pc_sp_df['join_value']=='result-2289668']
-daft_df_2.loc[daft_df_2['join_value']=='result-2289668']
 
-daft_df = pd.concat([daft_df_1, daft_df_2])
+daft_df = pd.concat([daft_df_1, daft_df_2],ignore_index=True)
 daft_df.head()
 daft_df.tail()
+
+# Write out the file to excel
+pc_df.to_csv(r'Files\pc_df.csv', index=False, header=True)
