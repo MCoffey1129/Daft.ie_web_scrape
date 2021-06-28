@@ -169,14 +169,22 @@ bed_bath_area_bs_sp = soup.findAll("div",{'class': 'SubUnit__CardInfoItem-sc-10x
 price_bs_sp = soup.findAll({"span","p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
 
 
-
+loc_bs_sp[0].text
 
 loc_sp_lst = []
-for i in range(len(loc_bs_sp)):
+for i in range(3):
     loc_sp_txt_i = loc_bs_sp[i].text
-    loc_parent_txt_i = loc_bs_sp[i].find_next("li")['data-testid']
-    loc_sp_lst.append((loc_parent_txt_i, loc_sp_txt_i))
+    loc_next_txt_i = loc_bs_sp[i].find_next("li")
+    loc_next_join_i = loc_next_txt_i['data-testid']
+    loc_sp_lst.append((loc_next_join_i, loc_sp_txt_i))
 
+print(loc_bs_sp[0])
+
+loc_sp_lst[0]
+loc_sp_lst[0][0]['data-testid']
+
+
+price_sp_lst[0]
 
 price_sp_lst = []
 for i in range(len(price_bs_sp)):
@@ -184,6 +192,7 @@ for i in range(len(price_bs_sp)):
     pc_parent_txt_i = price_bs_sp[i].find_parent("li")['data-testid']
     price_sp_lst.append((pc_parent_txt_i, pc_sp_txt_i))
 
+print(price_sp_lst)
 
 bba_sp_lst = []
 for i in range(len(bed_bath_area_bs_sp)):
