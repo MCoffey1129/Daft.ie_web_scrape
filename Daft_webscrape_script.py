@@ -43,6 +43,27 @@ import numpy as np
 #             any potential issues with the code
 ################################################################################################################
 
+# Pull the html code into a variable called req
+req = requests.get('https://www.daft.ie/property-for-sale/ireland')
+req_str = req.text
+print(req_str) # prints the html code
+
+# Create a beautiful soup object soup which will be used to parse the html code
+soup = bs(req_str, 'html.parser')
+print(type(soup))
+
+# From looking at the html code the location information for the first property is in the following block of html
+# <p data-testid="address" class="TitleBlock__Address-sc-1avkvav-7 knPImU">30 Cedarmount Road, Mount Merrion,
+# Co. Dublin</p>
+# You can obviously try using string operations to pull out the address for each property but the best way of doing this
+# is through BeautifulSoup. We want to search our html for each paragraph whic
+loc_bs = soup.findAll('p', {'class': 'TitleBlock__Address-sc-1avkvav-7 knPImU'})
+bed_bath_area_bs = soup.findAll('div', {'class': 'TitleBlock__CardInfo-sc-1avkvav-9 QvaxK'})
+btype_bs = soup.findAll('p', {'class': 'TitleBlock__CardInfoItem-sc-1avkvav-8 bcaKbv'})
+price_span_bs = soup.findAll('span', {'class': 'TitleBlock__StyledSpan-sc-1avkvav-4 gDBFnc'})
+
+
+
 
 
 
