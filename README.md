@@ -14,7 +14,7 @@ Many Financial Institutions, Government Agencies and Real Estate companies are v
 Advantages of having up-to-date information for Financial Institutions:
 ---
 * Bank's can assess if their property valuations are correct by comparing similar properties in the same location.
-* If we run our web scraping code on Daft.ie every 3 days we can see if the trend for similar property prices are positive or negative.
+* If we run our web scraping code on Daft.ie every 3 days we can see if the price trend for similar properties are positive or negative.
 * Using KNN we could look at the 3-5 nearest properties with the same features and construct a model for a fair price for our property, based on this we could flag 
   properties which may need to be re-valued
   
@@ -26,4 +26,5 @@ Advantages of having up-to-date information for Financial Institutions:
 * Compare the bank's average property values with Daft.ie. If the average of all 4 bedroom houses in Wexford town is €350,000 but the bank has an average value on their mortgages
   of €500,000 they may need to re-assess the value of their properties.
 * Periodically extracting data from Daft.ie would be extremely useful for predicting short term house price forecasts, location based forecasts, increase/decrease in sale activity 
-  of certain property types or sizes and other important information which may help the bank's medium term plan (including the identification of optimal locations for new branches). 
+  of certain property types or sizes and other important information which may help the bank's medium term plan (including the identification of optimal locations for new
+  branches). 
