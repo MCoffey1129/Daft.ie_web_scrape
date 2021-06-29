@@ -2,6 +2,7 @@
 # Overview - Python code used to extract property price information from the Daft.ie website
 ################################################################################################################
 
+
 # Please note there is a package called daftlistings which was created by Anthony Bloomer and 6 other contributors
 # if you want to check that out
 
