@@ -157,9 +157,26 @@ print(len(btype_lst))
 #   with each property by passing in the list of all towns and villages in Ireland which you can get from the
 #   following Wikipedia page https://en.wikipedia.org/wiki/List_of_towns_and_villages_in_the_Republic_of_Ireland
 
+county_lst =['Co. Antrim',	'Co. Armagh',	'Co. Carlow',	'Co. Cavan',	'Co. Clare',	'Co. Cork',
+             'Co. Derry',	'Co. Donegal',	'Co. Down',	'Co. Dublin',	'Co. Fermanagh',	'Co. Galway',
+             'Co. Kerry',	'Co. Kildare',	'Co. Kilkenny',	'Co. Laois',	'Co. Leitrim',	'Co. Limerick',
+             'Co. Longford', 'Co. Louth',	'Co. Mayo',	'Co. Meath',	'Co. Monaghan',	'Co. Offaly',
+             'Co. Roscommon',	'Co. Sligo',	'Co. Tipperary',	'Co. Tyrone',	'Co. Waterford',
+             'Co. Westmeath',	'Co. Wexford',	'Co. Wicklow',	'Dublin 1',	'Dublin 10',	'Dublin 11',
+             'Dublin 12',	'Dublin 13', 'Dublin 14',	'Dublin 15',	'Dublin 16',	'Dublin 17',
+             'Dublin 18',	'Dublin 2',	'Dublin 20',	'Dublin 22',	'Dublin 24',	'Dublin 3',
+             'Dublin 4',	'Dublin 5',	'Dublin 6',	'Dublin 6W',	'Dublin 7',	'Dublin 8',
+             'Dublin 9']
+
+
 loc_df = pd.DataFrame(loc_lst, columns=['address'])
-loc_df['county'] = loc_df['address'].str.rsplit(',').str[-1]
+loc_df['county_t'] = loc_df['address'].str.rsplit(',').str[-1]
+loc_df.loc[loc_df['county_t'].str.strip().isin(county_lst), ['county']] = loc_df['county_t']
+loc_df.drop('county_t',axis=1,inplace=True)
+loc_df['county'].fillna('', inplace=True)
 loc_df.head()
+
+loc_df.loc[loc_df['address']=='Woodlands, 1 Roebuck Drive']
 
 
 #   Price
@@ -291,11 +308,12 @@ for i in range(len(bed_bath_area_bs_sp)):
 #   Location
 #   No change from the previous code except we now have a 'join_value'
 loc_sp_df = pd.DataFrame(loc_sp_lst, columns=['join_value', 'address'])
-loc_sp_df['county'] = loc_sp_df['address'].str.rsplit(',').str[-1]
+loc_sp_df['county_t'] = loc_sp_df['address'].str.rsplit(',').str[-1]
+loc_sp_df.loc[loc_sp_df['county_t'].str.strip().isin(county_lst), ['county']] = loc_sp_df['county_t']
+loc_sp_df.drop('county_t',axis=1,inplace=True)
+loc_sp_df['county'].fillna('', inplace=True)
 loc_sp_df.head()
 loc_sp_df.shape
-
-
 
 #   Location
 #   No change from the previous code except we now have a 'join_value'
@@ -370,3 +388,5 @@ daft_df.tail()
 
 # Write out the file as a csv on your computer
 daft_df.to_csv(r'Files\daft_df.csv', index=False, header=True)
+
+
