@@ -5,7 +5,7 @@
 # Please note there is a package called daftlistings which was created by Anthony Bloomer and 6 other contributors
 # if you want to check that out
 
-# Before webscraping there are some key questions you first want to answer:
+# Before web scraping there are some key questions you first want to answer:
 
 # Qs 1) What exactly are you looking for, is this clearly defined?
 # Ans 1) We want to pull the following information from properties which are for sale on the Daft.ie website:
@@ -40,7 +40,7 @@ import re
 import numpy as np
 
 ################################################################################################################
-# Section 1 - We will firstly do a simple webscrape of the first 20 ads on Daft.ie to see if there is
+# Section 1 - We will firstly do a simple web scrape of the first 20 ads on Daft.ie to see if there is
 #             any potential issues with the code
 ################################################################################################################
 
@@ -81,11 +81,11 @@ print(prop_info_df)
 # for the "special" ads or ads which contain multiple properties. At present we are not taking in any information on
 # these properties except for the Price which seems to be taken in as a statement rather than an actual price.
 # You should be able to see this in your code as the price and location are not matched.
-# We need to take note of this when we do our webscrape!!
+# We need to take note of this when we do our web scrape!!
 
 
 ################################################################################################################
-# Section 2 - This is a webscrape of the "normal" or "typical" ads on Daft.ie such that
+# Section 2 - This is a web scrape of the "normal" or "typical" ads on Daft.ie such that
 #             each block of html code contains information on one property (price, location, bedrooms etc.)
 ################################################################################################################
 
@@ -267,7 +267,7 @@ daft_df_1.head()
 
 
 ################################################################################################################
-# Section 3 - This is a webscrape of the "special" or "multiple property" ads on Daft.ie such that
+# Section 3 - This is a web scrape of the "special" or "multiple property" ads on Daft.ie such that
 #             the address and the properties are in separate blocks of html code
 ################################################################################################################
 
