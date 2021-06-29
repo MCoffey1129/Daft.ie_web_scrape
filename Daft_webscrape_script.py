@@ -381,12 +381,29 @@ daft_df_2.drop_duplicates(subset=['join_value', 'address', 'county', 'price', 'b
 # Drop the 'join_value' field as it is no longer required
 daft_df_2.drop(columns=['join_value'], axis=1, inplace=True)
 
-# Concatenate the two tables to create your final daft table
+# Concatenate the two tables to create your final daft table and remove any duplicate values
+# (properties which appear on Daft more than once)
 daft_df = pd.concat([daft_df_1, daft_df_2], ignore_index=True)
+daft_df.drop_duplicates(subset=['address', 'county', 'bed', 'bath', 'prop_type','area','price']
+                          , inplace=True)
 daft_df.head()
 daft_df.tail()
+daft_df.shape
 
 # Write out the file as a csv on your computer
 daft_df.to_csv(r'Files\daft_df.csv', index=False, header=True)
 
 
+# You can now perform analysis on your data
+# Get a pivot of the price of properties by county and the number of bedrooms
+# (please note we remove all cases which have a price = 0 as this is our "unknown" field rather than
+# properties on sale for free!!)
+pvt_data = pd.pivot_table(daft_df.loc[daft_df['price_n']>0], values='price_n',
+                          index='county', columns='bed' ,aggfunc=np.mean)
+
+print(pvt_data)
+
+# Where are the 5 most expensive 3 bedroom properties in ireland according to Daft and what is the average price?
+# As expected its Dublin 4, Dublin 6, Dublin 18, Dublin 2 and Dublin 6W
+pvt_data.sort_values('3 Bed', ascending=False,inplace=True)
+pvt_data['3 Bed'].head()
