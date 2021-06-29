@@ -1,12 +1,13 @@
-# There is a package called daftlistings which was created by Anthony Bloomer and 6 other contributors
+################################################################################################################
+# Overview - Python code used to extract property price information from the Daft.ie website
+################################################################################################################
+
+# Please note there is a package called daftlistings which was created by Anthony Bloomer and 6 other contributors
 # if you want to check that out
 
-# For this code we are assuming that we want to download information from the Daft.ie using BeautifulSoup and
-# on a periodic basis.
+# Before webscraping there are some key questions you first want to answer:
 
-# For webscraping there are some key questions you first want to answer:
-
-# Qs 1) Define exactly what you ar looking for?
+# Qs 1) What exactly are you looking for, is this clearly defined?
 # Ans 1) We want to pull the following information from properties which are for sale on the Daft.ie website:
 #        Property price, location, number of bedrooms, number of bathrooms and type of property
 #        (we will also include any land that is for sale which can be easily deleted at a later time)
@@ -24,10 +25,11 @@
 #        The html code will show up on your screen.
 
 # Qs 4)  Is there any potential inconsistencies in the html code which will make it difficult to scrape property info?
-# Ans 4) Most properties on "Daft.ie" are in the let us say the "normal" format whereby each block of code contains the
-#        price, location, bedrooms etc. all in one section of the code.
+# Ans 4) Most properties on "Daft.ie" are in the "normal" format whereby each block of code contains one property for
+#        sale with the price, location, bedrooms etc. all in the same section of code.
+
 #        There are however "special" ads, these are ads that usually have multiple properties for sale at one location,
-#        the issue for us is that the html code for these properties is inconsistent with code for the other properties.
+#        the issue for us is that the html code for these properties is not consistent with code for 'normal' properties
 #        We will pull these two sets of properties out separately and combine them at the end.
 
 # Import Packages
@@ -54,9 +56,8 @@ print(type(soup))
 # From looking at the html code the location information for the first property is in the following block of html
 # <p data-testid="address" class="TitleBlock__Address-sc-1avkvav-7 knPImU">30 Cedarmount Road, Mount Merrion,
 # Co. Dublin</p>
-# You can obviously try using string operations to pull out the address for each property but the best way of doing this
-# is through BeautifulSoup. We want to search our html for each paragraph ('p') which contains class = "TitleBlock...."
-# We repeat for bringing in the bed, bath and area (this is in one section of code), building type and price.
+# We want to search our html for each paragraph ('p') which contains class = "TitleBlock...."
+# We repeat for bringing in the bed, bath and area , building type and price.
 
 loc_bs = soup.findAll('p', {'class': 'TitleBlock__Address-sc-1avkvav-7 knPImU'})
 bed_bath_area_bs = soup.findAll('div', {'class': 'TitleBlock__CardInfo-sc-1avkvav-9 QvaxK'})
@@ -77,9 +78,9 @@ print(prop_info_df)
 # Findings:
 # The code correctly brings in the location (column 1), bed, bath and area (column 2), property type (column 3)
 # and price (column 4). There are a number of issues however, the html code is written differently
-# for the "special" or ads which contain multiple properties. At present we are not taking in any information on these
-# properties except that we are incorrectly bringing in the Price which looks to actually be a statement. You should
-# be able to see this in your code as the price and location are not matched.
+# for the "special" ads or ads which contain multiple properties. At present we are not taking in any information on
+# these properties except for the Price which seems to be taken in as a statement rather than an actual price.
+# You should be able to see this in your code as the price and location are not matched.
 # We need to take note of this when we do our webscrape!!
 
 
@@ -89,7 +90,7 @@ print(prop_info_df)
 ################################################################################################################
 
 # Pull the html code in text format into a variable called req_str for the first 15,000 properties
-# which is close to the total number of properties for sale on Daft.
+# which is close to the total number of properties for sale on Daft (feel free to update).
 req = requests.get('https://www.daft.ie/property-for-sale/ireland')
 req_str = req.text
 
@@ -113,13 +114,13 @@ price_span_bs = soup.findAll('span', {'class': 'TitleBlock__StyledSpan-sc-1avkva
 print(len(loc_bs))
 print(bed_bath_area_bs)
 
-# Due to the make up of how the html code information on Bed/bath/area and price  from the "special" or multiple
+# Information on Bed/bath/area and price from the "special" or multiple
 # property ads are included.
 # For Bed/bath/area these have been brought in with a missing text value for which we will remove by
 # specifying that the length must be greater than zero.
-# Price for "special" ads has been brought in incorrectly, we can distinguish these cases  which we do not want
-# included based off of their parent value (we use the anchor reference as the parent value).
-# To learn more about parents, siblings and the whole family tree in beautifulSoup there are some
+# Price for "special" ads has been brought in incorrectly, we can distinguish these cases
+# based off on their parent value (we use the anchor reference as the parent value).
+# To learn more about parents, siblings (and the whole family tree) in beautifulSoup there are some
 # excellent YouTube videos which I am happy to share
 
 price_lst = []
@@ -129,7 +130,7 @@ for i in range(len(price_span_bs)):
     pc_parent_txt_i = price_span_bs[i].find_parent('a')['href']
     price_lst.append((pc_parent_txt_i, pc_txt_i))
 
-    # Creating a seperator as this will make it easier to split into separate columns later
+    # Creating a separator as this will make it easier to split the data into separate columns later
     bba_txt_i = bed_bath_area_bs[i].get_text(separator='·')
     if len(bba_txt_i) > 0:
         bba_lst.append(bba_txt_i)
@@ -150,21 +151,20 @@ print(len(btype_lst))
 
 #   Location
 #   Convert the location list into a dataframe
-#   Use regex to extract the county from the address column, we can achieve this because we know that
-#   the County on the address will always follow "Co." If you are ever in doubt on regex use the following website
-#   https://regex101.com/r/CMGOHz/1
+#   The county for each of the properties should be the information on each property after the last comma
 
 #   Going forward you may want to do more segregation on the address column. You may want to get the town associated
-#   with each property by passing in the list of all towns and villages in Ireland that you have pulled from the
+#   with each property by passing in the list of all towns and villages in Ireland which you can get from the
 #   following Wikipedia page https://en.wikipedia.org/wiki/List_of_towns_and_villages_in_the_Republic_of_Ireland
 
 loc_df = pd.DataFrame(loc_lst, columns=['address'])
-loc_df['county'] = loc_df['address'].str.extract('(Co. [A-Z][a-z]+)', expand=True)
+loc_df['county'] = loc_df['address'].str.rsplit(',').str[-1]
 loc_df.head()
+
 
 #   Price
 #   Only keep properties which have a parent address which starts with '/for-sale' as we know that these are
-#   the properties we are interested in
+#   the properties we are interested in.
 
 pc_df = pd.DataFrame(price_lst, columns=['ref', 'price'])
 pc_df = pc_df.loc[pc_df['ref'].str[:9] == '/for-sale']
@@ -172,8 +172,9 @@ pc_df.reset_index(inplace=True)
 pc_df.drop(columns=['index', 'ref'], inplace=True)
 pc_df.head()
 
-# The price field is a character field. We want to remove all €,£, and any character fields such as price on
-# application
+# The price field is a character field. We want to remove all €,£, and any character fields such as "Price on
+# Application"
+# If you are ever in doubt on regex use the following website https://regex101.com/r/CMGOHz/1
 pc_df['price'] = pc_df['price'].str.strip()
 pc_df['price_n'] = pc_df['price'].replace({'\€': '',  # € symbols replaced with ''
                                            ',': '',  # , replaced with ''
@@ -197,7 +198,8 @@ pc_df.info() # check to ensure price_n is numeric
 bba_df = pd.DataFrame(bba_lst, columns=['bba'])
 bba_wrk = bba_df['bba'].str.split(pat='·', expand=True)
 bba_wrk.columns = ['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t']
-# useful code for removing the trailing balanks for the char fields in the dataset
+
+# useful code for removing the trailing blanks for the char fields in the dataset
 bba_wrk = bba_wrk.apply(lambda x: x.str.strip())
 bba_wrk = bba_wrk.fillna('')
 bba_wrk.head()
@@ -212,7 +214,7 @@ bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bath'), ['bath']] = bba_wrk['bed_t']
 bba_wrk.loc[bba_wrk['bath_t'].str.contains('Bath'), ['bath']] = bba_wrk['bath_t']
 
 # Proprty Type
-# For property type we pass a list through the dataframe to create our property type column
+# For property type we pass a list of all property types through the dataframe to create our property type column
 prop_lst = ['Apartment', 'Bungalow', 'Detached', 'Duplex', 'End of Terrace', 'House', 'Semi-D', 'Site', 'Studio' \
     , 'Terrace', 'Townhouse']
 bba_wrk.loc[bba_wrk['bed_t'].isin(prop_lst), ['prop_type']] = bba_wrk['bed_t']
@@ -222,8 +224,8 @@ bba_wrk.loc[bba_wrk['prop_type_t'].isin(prop_lst), ['prop_type']] = bba_wrk['pro
 bba_wrk.head()
 
 # Area
-# For getting the area of each property we use regex to look for either the pattern "[some number] m" or
-# "[some number] ac" to get the area as the area of properties will either be quoted in m^2 or in acres.
+# For getting the area of each property we use regex to look for either the pattern "[number] m" or
+# "[number] ac" to get the area as the area of properties will either be quoted in m^2 or in acres.
 bba_wrk.loc[(bba_wrk['bed_t'].str.contains(r'\d m'))
             | (bba_wrk['bed_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['bed_t']
 
@@ -258,8 +260,8 @@ loc_bs_sp = soup.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 eARcqq
 bed_bath_area_bs_sp = soup.findAll("div", {'class': 'SubUnit__CardInfoItem-sc-10x486s-7 AsGHw'})
 price_bs_sp = soup.findAll({"span", "p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
 
-# Similar to Section 2 we get the location, price and bba lists by looping through each of the text fields
-# The issue we face with these properties is that we have multiple properties associated with singular locations
+# Similar to Section 2 we get the location, price and Bed/Bath/Area (bba) lists by looping through each of the text
+# fields. The issue we face with these properties is that we have multiple properties associated with singular locations
 # so we will have to create an identifier for linking each property to the correct location
 # We know that the parent ("li")['data-testid'] of the location is equal to the "grandparent" (the second result
 # of the find_parents) of the price and bba, we will use this to join the dataframes later in the code.
@@ -289,9 +291,11 @@ for i in range(len(bed_bath_area_bs_sp)):
 #   Location
 #   No change from the previous code except we now have a 'join_value'
 loc_sp_df = pd.DataFrame(loc_sp_lst, columns=['join_value', 'address'])
-loc_sp_df['county'] = loc_sp_df['address'].str.extract('(Co. [A-Z][a-z]+)', expand=True)
+loc_sp_df['county'] = loc_sp_df['address'].str.rsplit(',').str[-1]
 loc_sp_df.head()
 loc_sp_df.shape
+
+
 
 #   Location
 #   No change from the previous code except we now have a 'join_value'
@@ -365,4 +369,4 @@ daft_df.head()
 daft_df.tail()
 
 # Write out the file as a csv on your computer
-pc_df.to_csv(r'Files\pc_df.csv', index=False, header=True)
+daft_df.to_csv(r'Files\daft_df.csv', index=False, header=True)
