@@ -4,26 +4,31 @@
 # For this code we are assuming that we want to download information from the Daft.ie using BeautifulSoup and
 # on a periodic basis.
 
-# Qs 1) Define exactly what we ar looking for?
-# Ans 1) For this problem we are looking at what are the prices of all houses in Ireland on the Daft.ie website.
+# For webscraping there are some key questions you first want to answer:
 
-# Qs 2) Where exactly would we get this information if we had to go on the Daft.ie website
-# Ans 2) We would go to the following URL - https://www.daft.ie/property-for-sale/ireland for the first 20 properties
-#        https://www.daft.ie/property-for-sale/ireland?from=20&pageSize=20 for properties 20 - 40
-#        https://www.daft.ie/property-for-sale/ireland?pageSize=20&from=40 for properties 40 - 60
-#        https://www.daft.ie/property-for-sale/ireland?pageSize=20&from=60 for properties 60 - 80 etc.
-#        as you can see we will be able to creat a loop to bring in all these properties.
+# Qs 1) Define exactly what you ar looking for?
+# Ans 1) We want to pull the following information from properties which are for sale on the Daft.ie website:
+#        Property price, location, number of bedrooms, number of bathrooms and type of property
+#        (we will also include any land that is for sale which can be easily deleted at a later time)
 
-# Qs 3) What does the html code look like?
+
+# Qs 2)  Where exactly would we get this information on the Daft.ie website?
+# Ans 2) We would go to the following URL - https://www.daft.ie/property-for-sale/ireland for the first 20 adverts
+#        https://www.daft.ie/property-for-sale/ireland?from=20&pageSize=20 for adverts 20 - 40
+#        https://www.daft.ie/property-for-sale/ireland?pageSize=20&from=40 for adverts 40 - 60
+#        https://www.daft.ie/property-for-sale/ireland?pageSize=20&from=60 for adverts 60 - 80 etc.
+#        as you can see we will be able to create a loop to bring in all these properties.
+
+# Qs 3)  What does the html code look like?
 # Ans 3) Go to the main page https://www.daft.ie/property-for-sale/ireland, right click on the page and select "inspect"
-#
+#        The html code will show up on your screen.
 
-# Before performing a webscrape of any website the first thing I like to do is to take a look at the html code
-# in the website:
-# 1) Go to the webpage
-# 2) Right click on the page and select "inspect"
-# 3) The html code will pop up on your screen
-
+# Qs 4)  Is there any potential inconsistencies in the html code which will make it difficult to scrape property info?
+# Ans 4) Most properties on "Daft.ie" are in the let us say the "normal" format whereby each block of code contains the
+#        price, location, bedrooms etc. all in one section of the code.
+#        There are however "special" ads, these are ads that usually have multiple properties for sale at one location,
+#        the issue for us is that the html code for these properties is inconsistent with code for the other properties.
+#        We will pull these two sets of properties out separately and combine them at the end.
 
 # Import Packages
 import requests
@@ -31,6 +36,14 @@ from bs4 import BeautifulSoup as bs
 import pandas as pd
 import re
 import numpy as np
+
+
+################################################################################################################
+# Section 1 - We will firstly do a simple webscrape of the first 20 ads on Daft.ie to see if there is
+#             any potential issues with the code
+################################################################################################################
+
+
 
 
 # Connect to the daft website - showing the first 20 houses for sale
@@ -42,15 +55,13 @@ req2 = requests.get('https://www.daft.ie/property-for-sale/ireland?from=20&pageS
 req_str = req_str + req2.text
 
 for i in range(40, 15000, 20):
-    url_n = 'https://www.daft.ie/property-for-sale/ireland?pageSize=20&from='+str(i)
+    url_n = 'https://www.daft.ie/property-for-sale/ireland?pageSize=20&from=' + str(i)
     req_n = requests.get(url_n).text
     req_str = req_str + req_n
 
 # Create a beautiful soup object search which will be used to parse the daft.ie website
-soup = bs(req_str , 'html.parser')
+soup = bs(req_str, 'html.parser')
 print(type(soup))
-
-
 
 # Use the search object to extract the information required from the html code
 # For location it will search the html code where class = 'TitleBlock__Address-sc-1avkvav-7 knPImU'
@@ -60,7 +71,7 @@ print(type(soup))
 #       An add which contains multiple properties (issue is that Price is coming in incorrectly)
 
 loc_bs = soup.findAll('p', {'class': 'TitleBlock__Address-sc-1avkvav-7 knPImU'})
-bed_bath_area_bs = soup.findAll('div',{'class': 'TitleBlock__CardInfo-sc-1avkvav-9 QvaxK'})
+bed_bath_area_bs = soup.findAll('div', {'class': 'TitleBlock__CardInfo-sc-1avkvav-9 QvaxK'})
 btype_bs = soup.findAll('p', {'class': 'TitleBlock__CardInfoItem-sc-1avkvav-8 bcaKbv'})
 price_span_bs = soup.findAll('span', {'class': 'TitleBlock__StyledSpan-sc-1avkvav-4 gDBFnc'})
 print(len(loc_bs))
@@ -75,7 +86,7 @@ bba_lst = []
 for i in range(len(price_span_bs)):
     pc_txt_i = price_span_bs[i].text
     pc_parent_txt_i = price_span_bs[i].find_parent('a')['href']
-    price_lst.append((pc_parent_txt_i,pc_txt_i))
+    price_lst.append((pc_parent_txt_i, pc_txt_i))
 
     bba_txt_i = bed_bath_area_bs[i].get_text(separator='·')
     if len(bba_txt_i) > 0:
@@ -96,77 +107,59 @@ print(len(loc_lst))
 print(len(btype_lst))
 
 #
-loc_df = pd.DataFrame(loc_lst,columns = ['address'])
-loc_df['county'] =loc_df['address'].str.extract('(Co. [A-Z][a-z]+)',expand=True)
+loc_df = pd.DataFrame(loc_lst, columns=['address'])
+loc_df['county'] = loc_df['address'].str.extract('(Co. [A-Z][a-z]+)', expand=True)
 loc_df.head()
 
-pc_df = pd.DataFrame(price_lst,columns = ['ref', 'price'])
-pc_df =pc_df.loc[pc_df['ref'].str[:9]=='/for-sale']
+pc_df = pd.DataFrame(price_lst, columns=['ref', 'price'])
+pc_df = pc_df.loc[pc_df['ref'].str[:9] == '/for-sale']
 pc_df.reset_index(inplace=True)
-pc_df.drop(columns=['index','ref'], inplace=True)
+pc_df.drop(columns=['index', 'ref'], inplace=True)
 pc_df.head()
 
 # Create a numeric price field
 pc_df['price'] = pc_df['price'].str.strip()
-pc_df['price_n'] = pc_df['price'].replace({'\€': '' ,  ',': '' , 'AMV: ': '' , 'AMV: Price on Application':'0'
-                                            ,'Price on Application': '0'
+pc_df['price_n'] = pc_df['price'].replace({'\€': '', ',': '', 'AMV: ': '', 'AMV: Price on Application': '0'
+                                              , 'Price on Application': '0'
                                               , '(£.*?)[\s]': ''
-                                              , '[\(\)]':''}
+                                              , '[\(\)]': ''}
                                           , regex=True).astype(float)
-
 
 pc_df.info()
 
-pc_df['price_n'] = pc_df['price_n'].str.strip()
-
-pc_df.to_csv(r'Files\pc_df.csv', index=False, header=True)
-
-pc_df['price_n'] = pc_df['price_n'].astype(float)
-
-pc_df.head()
-
-pc_df.loc[pc_df['price'] == 'AMV: Price on Application']
-pc_df.to_csv(r'Files\pc_df.csv', index=False, header=True)
-
-bba_df =pd.DataFrame(bba_lst,columns=['bba'])
-bba_wrk = bba_df['bba'].str.split(pat='·',expand=True)
+bba_df = pd.DataFrame(bba_lst, columns=['bba'])
+bba_wrk = bba_df['bba'].str.split(pat='·', expand=True)
 bba_wrk.columns = ['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t']
 bba_wrk = bba_wrk.apply(lambda x: x.str.strip())
 bba_wrk = bba_wrk.fillna('')
 bba_wrk.head()
-
 
 bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bed'), ['bed']] = bba_wrk['bed_t']
 
 bba_wrk.loc[bba_wrk['bed_t'].str.contains('Bath'), ['bath']] = bba_wrk['bed_t']
 bba_wrk.loc[bba_wrk['bath_t'].str.contains('Bath'), ['bath']] = bba_wrk['bath_t']
 
-prop_lst = ['Apartment','Bungalow','Detached','Duplex','End of Terrace','House','Semi-D','Site','Studio'\
-    ,'Terrace','Townhouse']
+prop_lst = ['Apartment', 'Bungalow', 'Detached', 'Duplex', 'End of Terrace', 'House', 'Semi-D', 'Site', 'Studio' \
+    , 'Terrace', 'Townhouse']
 bba_wrk.loc[bba_wrk['bed_t'].isin(prop_lst), ['prop_type']] = bba_wrk['bed_t']
-bba_wrk.loc[bba_wrk['bath_t'].isin(prop_lst) , ['prop_type']] = bba_wrk['bath_t']
-bba_wrk.loc[bba_wrk['area_t'].isin(prop_lst) , ['prop_type']] = bba_wrk['area_t']
+bba_wrk.loc[bba_wrk['bath_t'].isin(prop_lst), ['prop_type']] = bba_wrk['bath_t']
+bba_wrk.loc[bba_wrk['area_t'].isin(prop_lst), ['prop_type']] = bba_wrk['area_t']
 bba_wrk.loc[bba_wrk['prop_type_t'].isin(prop_lst), ['prop_type']] = bba_wrk['prop_type_t']
 bba_wrk.head()
 
 bba_wrk.loc[(bba_wrk['bed_t'].str.contains(r'\d m'))
-             | (bba_wrk['bed_t'].str.contains(r'\d ac')) , ['area']] = bba_wrk['bed_t']
+            | (bba_wrk['bed_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['bed_t']
 
 bba_wrk.loc[(bba_wrk['bath_t'].str.contains(r'\d m'))
-             | (bba_wrk['bath_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['bath_t']
+            | (bba_wrk['bath_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['bath_t']
 
 bba_wrk.loc[(bba_wrk['area_t'].str.contains(r'\d m'))
-             | (bba_wrk['area_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['area_t']
+            | (bba_wrk['area_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['area_t']
 
 bba_wrk.loc[(bba_wrk['prop_type_t'].str.contains(r'\d m'))
-             | (bba_wrk['prop_type_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['prop_type_t']
+            | (bba_wrk['prop_type_t'].str.contains(r'\d ac')), ['area']] = bba_wrk['prop_type_t']
 
-
-
-
-
-
-bba_df_final =  bba_wrk.drop(columns=['bed_t','bath_t','area_t','prop_type_t', 'extra_t'])
+bba_df_final = bba_wrk.drop(columns=['bed_t', 'bath_t', 'area_t', 'prop_type_t', 'extra_t'])
 bba_df_final.fillna('', inplace=True)
 bba_df_final.head()
 
@@ -175,10 +168,7 @@ daft_df_1.head()
 
 daft_df_1.shape
 
-
 ################################################################################
-
-
 
 
 # Use the search object to extract the information required from the html code
@@ -187,19 +177,14 @@ daft_df_1.shape
 # featured property
 
 loc_bs_sp = soup.findAll("p", {'class': 'TitleBlock__Address-sc-1avkvav-7 eARcqq'})
-bed_bath_area_bs_sp = soup.findAll("div",{'class': 'SubUnit__CardInfoItem-sc-10x486s-7 AsGHw'})
-price_bs_sp = soup.findAll({"span","p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
-
-
-
+bed_bath_area_bs_sp = soup.findAll("div", {'class': 'SubUnit__CardInfoItem-sc-10x486s-7 AsGHw'})
+price_bs_sp = soup.findAll({"span", "p"}, {'class': 'SubUnit__Title-sc-10x486s-5 keXaVZ'})
 
 loc_sp_lst = []
 for i in range(len(loc_bs_sp)):
     loc_sp_txt_i = loc_bs_sp[i].text
     loc_next_txt_i = loc_bs_sp[i].find_parent("li")['data-testid']
     loc_sp_lst.append((loc_next_txt_i, loc_sp_txt_i))
-
-
 
 price_sp_lst = []
 for i in range(len(price_bs_sp)):
@@ -218,28 +203,32 @@ for i in range(len(bed_bath_area_bs_sp)):
 
 bba_sp_lst[0:4]
 
-loc_sp_df = pd.DataFrame(loc_sp_lst,columns = ['join_value', 'address'])
-loc_sp_df['county'] =loc_sp_df['address'].str.extract('(Co. [A-Z][a-z]+)',expand=True)
+loc_sp_df = pd.DataFrame(loc_sp_lst, columns=['join_value', 'address'])
+loc_sp_df['county'] = loc_sp_df['address'].str.extract('(Co. [A-Z][a-z]+)', expand=True)
 loc_sp_df.head()
 loc_sp_df.shape
 
-pc_sp_df = pd.DataFrame(price_sp_lst,columns = ['join_value', 'price'])
+pc_sp_df = pd.DataFrame(price_sp_lst, columns=['join_value', 'price'])
 pc_sp_df.head()
 pc_sp_df.shape
 
-bba_sp_df =pd.DataFrame(bba_sp_lst,columns=['join_value','bba'])
+pc_sp_df['price_n'] = pc_sp_df['price'].replace({'\€': '', ',': '', 'AMV: ': '', 'AMV: Price on Application': '0'
+                                                    , 'Price on Application': '0'
+                                                    , '(£.*?)[\s]': ''
+                                                    , '[\(\)]': ''}
+                                                , regex=True).astype(float)
+
+pc_sp_df.info()
+
+bba_sp_df = pd.DataFrame(bba_sp_lst, columns=['join_value', 'bba'])
 bba_sp_df.head()
 bba_sp_df.shape
 
-bba_sp_wrk = bba_sp_df['bba'].str.split(pat='·',expand=True)
-bba_sp_wrk.columns = ['bed_t', 'bath_t',  'prop_type_t']
+bba_sp_wrk = bba_sp_df['bba'].str.split(pat='·', expand=True)
+bba_sp_wrk.columns = ['bed_t', 'bath_t', 'prop_type_t']
 bba_sp_wrk = bba_sp_wrk.apply(lambda x: x.str.strip())
 bba_sp_wrk = bba_sp_wrk.fillna('')
 bba_sp_wrk.head()
-
-
-
-
 
 bba_sp_wrk.loc[bba_sp_wrk['bed_t'].str.contains('Bed'), ['bed']] = bba_sp_wrk['bed_t']
 
@@ -252,26 +241,22 @@ bba_sp_wrk.loc[bba_sp_wrk['prop_type_t'].isin(prop_lst), ['prop_type']] = bba_sp
 
 bba_sp_wrk['area'] = ''
 
-bba_sp_df_final = pd.concat([bba_sp_df['join_value'], bba_sp_wrk.drop(columns=['bed_t','bath_t','prop_type_t'])]
-                            ,axis=1)
+bba_sp_df_final = pd.concat([bba_sp_df['join_value'], bba_sp_wrk.drop(columns=['bed_t', 'bath_t', 'prop_type_t'])]
+                            , axis=1)
 bba_sp_df_final.fillna('', inplace=True)
 bba_sp_df_final.head()
 
-
 daft_df_2 = pd.merge(pd.merge(loc_sp_df, bba_sp_df_final, on=['join_value'], how='inner')
-                                    ,pc_sp_df, on=['join_value'], how='inner')
+                     , pc_sp_df, on=['join_value'], how='inner')
 
-daft_df_2.drop_duplicates(subset=['join_value',	'address', 'county', 'price', 'bed', 'bath', 'prop_type']
-                                    , inplace=True)
-
-
+daft_df_2.drop_duplicates(subset=['join_value', 'address', 'county', 'price', 'bed', 'bath', 'prop_type']
+                          , inplace=True)
 
 daft_df_2.to_csv(r'Files\daft_df_2.csv', index=False, header=True)
 
-daft_df_2.drop(columns=['join_value'],axis=1,inplace=True)
+daft_df_2.drop(columns=['join_value'], axis=1, inplace=True)
 
-
-daft_df = pd.concat([daft_df_1, daft_df_2],ignore_index=True)
+daft_df = pd.concat([daft_df_1, daft_df_2], ignore_index=True)
 daft_df.head()
 daft_df.tail()
 
